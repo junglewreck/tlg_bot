@@ -55,7 +55,7 @@ def vibor(bot, update):
     #     meme=random.choice(os.listdir("img/"))
     #     bot.send_photo(chat_id=chat_id, photo=open("img/"+meme, 'rb'))
     if update.message.text == "/shot":
-	update.message.reply_text("please wait...")
+	    update.message.reply_text("please wait...")
         transfer = subprocess.call('./transfer.sh', shell=True)
         chat_id = update.message.chat_id
         logger.info(chat_id)
