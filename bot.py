@@ -14,6 +14,7 @@
 #      bot.polling(none_stop=True)
 import random, glob
 import os
+import subprocess
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
                           ConversationHandler)
@@ -41,42 +42,47 @@ GENDER, PHOTO, LOCATION, BIO, PSW, GIVE_MEME, GIVE_FILM, VIBOR = range(8)
 #     return GENDER
 
 def start(bot, update):
-    update.message.reply_text("/meme for meme or /imdb for film")
+    update.message.reply_text("/shot for GAS or /imdb for film")
     logger.info(update.message.text)
     return VIBOR
 
 def vibor(bot, update):
     user = update.message.from_user
     logger.info(update.message.text)
-    if update.message.text == "/meme":
+    # if update.message.text == "/meme":
+    #     chat_id = update.message.chat_id
+    #     logger.info(chat_id)
+    #     meme=random.choice(os.listdir("img/"))
+    #     bot.send_photo(chat_id=chat_id, photo=open("img/"+meme, 'rb'))
+    if update.message.text == "/shot":
+        transfer = subprocess.call('transfer.sh', shell=True)
         chat_id = update.message.chat_id
         logger.info(chat_id)
-        meme=random.choice(os.listdir("img/"))
-        bot.send_photo(chat_id=chat_id, photo=open("img/"+meme, 'rb'))
-    elif update.message.text == "/imdb":
-        imdb = Imdb()
-        film =  imdb.top_250()
-        rnd = (random.randint(0,249))
-        full = film[rnd]
-        title = film[rnd].get('title')
-
-        update.message.reply_text("please wait...")
-        movie_list = Movie.objects.search(title)
-        aidi =  movie_list[0].id
-        movie_kinopoisk = Movie(id=aidi)
-        movie_kinopoisk.get_content('main_page')
-        title_kinopoisk = movie_kinopoisk.title
-        year_kinopoisk = movie_kinopoisk.year
-        description = movie_kinopoisk.plot
-        # year_kinopoisk = str(year_kinopoisk)
-        # print title_kinopoisk
-
-        poster_full = film[rnd].get('image')
-        poster_img = poster_full.get('url')
-
-        # update.message.reply_text(title + "/" + title_kinopoisk + "(" + str(movie_kinopoisk.year) + ")" )
-        update.message.reply_text("%s/%s(%s) \n %s" % (title, title_kinopoisk, year_kinopoisk, description))
-        update.message.reply_text(poster_img)
+        bot.send_photo(chat_id=chat_id, photo=open("shot.jpg", 'rb'))
+    # elif update.message.text == "/imdb":
+    #     imdb = Imdb()
+    #     film =  imdb.top_250()
+    #     rnd = (random.randint(0,249))
+    #     full = film[rnd]
+    #     title = film[rnd].get('title')
+    #
+    #     update.message.reply_text("please wait...")
+    #     movie_list = Movie.objects.search(title)
+    #     aidi =  movie_list[0].id
+    #     movie_kinopoisk = Movie(id=aidi)
+    #     movie_kinopoisk.get_content('main_page')
+    #     title_kinopoisk = movie_kinopoisk.title
+    #     year_kinopoisk = movie_kinopoisk.year
+    #     description = movie_kinopoisk.plot
+    #     # year_kinopoisk = str(year_kinopoisk)
+    #     # print title_kinopoisk
+    #
+    #     poster_full = film[rnd].get('image')
+    #     poster_img = poster_full.get('url')
+    #
+    #     # update.message.reply_text(title + "/" + title_kinopoisk + "(" + str(movie_kinopoisk.year) + ")" )
+    #     update.message.reply_text("%s/%s(%s) \n %s" % (title, title_kinopoisk, year_kinopoisk, description))
+    #     update.message.reply_text(poster_img)
     else:
         update.message.reply_text('Bye!')
         return ConversationHandler.END
