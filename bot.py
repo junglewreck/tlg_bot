@@ -1,195 +1,113 @@
-# # -*- coding: utf-8 -*-
-# import config
-# import telebot
-# import telegram
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
-# bot = telebot.TeleBot(config.token)
-#
-# @bot.message_handler(content_types=["text"])
-# def repeat_all_messages(message):
-#     bot.send_message(message.chat.id, 'nu zdarova, epta')
-#     bot.send_photo(chat_id=chat_id, photo='https://telegram.org/img/t_logo.png')
-#
-# if __name__ == '__main__':
-#      bot.polling(none_stop=True)
-import random, glob
-import os
-import subprocess
-from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
+# Simple Bot to reply to Telegram messages
+# This program is dedicated to the public domain under the CC0 license.
+"""
+This Bot uses the Updater class to handle the bot.
+First, a few callback functions are defined. Then, those functions are passed to
+the Dispatcher and registered at their respective places.
+Then, the bot is started and runs until we press Ctrl-C on the command line.
+Usage:
+Example of a bot-user conversation using ConversationHandler.
+Send /start to initiate the conversation.
+Press Ctrl-C on the command line or send a signal to the process to stop the
+bot.
+"""
+
+from telegram import ReplyKeyboardMarkup
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
                           ConversationHandler)
-from kinopoisk.movie import Movie
-import logging
-from imdbpie import Imdb
 
+import logging
+import subprocess
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-GENDER, PHOTO, LOCATION, BIO, PSW, GIVE_MEME, GIVE_FILM, VIBOR = range(8)
+CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
 
-# def start(bot, update):
-#     reply_keyboard = [['Boy', 'Girl', 'Other']]
-#
-#     update.message.reply_text(
-#         'Hi! My name is Professor Bot. I will hold a conversation with you. '
-#         'Send /cancel to stop talking to me.\n\n'
-#         'Are you a boy or a girl?',
-#         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-#
-#     return GENDER
+reply_keyboard = [['/shot', 'Favourite colour'],
+                  ['Number of siblings', 'ipcam1'],
+                  ['Done']]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+
+def facts_to_str(user_data):
+    facts = list()
+
+    for key, value in user_data.items():
+        facts.append('{} - {}'.format(key, value))
+
+    return "\n".join(facts).join(['\n', '\n'])
+
 
 def start(bot, update):
-    update.message.reply_text("/shot for GAS or /imdb for film")
     logger.info(update.message.text)
-    return VIBOR
+    update.message.reply_text(
+        "/shot for GAS boiler /ipcam1 for out cam",
+        reply_markup=markup)
 
-def vibor(bot, update):
-    user = update.message.from_user
-    logger.info(update.message.text)
-    # if update.message.text == "/meme":
-    #     chat_id = update.message.chat_id
-    #     logger.info(chat_id)
-    #     meme=random.choice(os.listdir("img/"))
-    #     bot.send_photo(chat_id=chat_id, photo=open("img/"+meme, 'rb'))
-    if update.message.text == "/shot":
-	    update.message.reply_text("please wait...")
-        transfer = subprocess.call('./transfer.sh', shell=True)
-        chat_id = update.message.chat_id
-        logger.info(chat_id)
-        bot.send_photo(chat_id=chat_id, photo=open("shot1.jpg", 'rb'))
-    # elif update.message.text == "/imdb":
-    #     imdb = Imdb()
-    #     film =  imdb.top_250()
-    #     rnd = (random.randint(0,249))
-    #     full = film[rnd]
-    #     title = film[rnd].get('title')
-    #
-    #     update.message.reply_text("please wait...")
-    #     movie_list = Movie.objects.search(title)
-    #     aidi =  movie_list[0].id
-    #     movie_kinopoisk = Movie(id=aidi)
-    #     movie_kinopoisk.get_content('main_page')
-    #     title_kinopoisk = movie_kinopoisk.title
-    #     year_kinopoisk = movie_kinopoisk.year
-    #     description = movie_kinopoisk.plot
-    #     # year_kinopoisk = str(year_kinopoisk)
-    #     # print title_kinopoisk
-    #
-    #     poster_full = film[rnd].get('image')
-    #     poster_img = poster_full.get('url')
-    #
-    #     # update.message.reply_text(title + "/" + title_kinopoisk + "(" + str(movie_kinopoisk.year) + ")" )
-    #     update.message.reply_text("%s/%s(%s) \n %s" % (title, title_kinopoisk, year_kinopoisk, description))
-    #     update.message.reply_text(poster_img)
-    else:
-        update.message.reply_text('Bye!')
-        return ConversationHandler.END
+    return CHOOSING
 
-# def intro(bot, update):
-#     update.message.reply_text('Password Please')
-#     user = update.message.from_user
-#     logger.info(update.message.text)
-#     return gender
+
+# def regular_choice(bot, update, user_data):
+#     text = update.message.text
+#     user_data['choice'] = text
+#     update.message.reply_text(
+#         'Your {}? Yes, I would love to hear about that!'.format(text.lower()))
+#
+#     return TYPING_REPLY
 #
 
-# tries = 0
-# def psw_check(bot, update):
-#     user = update.message.from_user
-#     chat_id = update.message.chat_id
-#     logger.info(tries)
-#     if tries > 4:
-#         update.message.reply_text('fuck u, bye')
-#         return ConversationHandler.END
-#     elif update.message.text == '6200433':
-#         update.message.reply_text('u r wlcm, write /meme, to take meme or /imdb to take film')
-#         return GIVE_FILM
-#     else:
-#         update.message.reply_text('the psw is incorrect')
-#         global tries
-#         tries += 1
+# def custom_choice(bot, update):
+#     update.message.reply_text('Alright, please send me the category first, '
+#                               'for example "Most impressive skill"')
+#
+#     return TYPING_CHOICE
 
-
-def give_meme(bot, update):
-    user = update.message.from_user
+def shot(bot, update):
+    logger.info(update.message.text)
+    update.message.reply_text("please wait...")
+    transfer = subprocess.call('./transfer.sh', shell=True)
     chat_id = update.message.chat_id
     logger.info(chat_id)
-    meme=random.choice(os.listdir("img/"))
-    bot.send_photo(chat_id=chat_id, photo=open("img/"+meme, 'rb'))
+    bot.send_photo(chat_id=chat_id, photo=open("shot.jpg", 'rb'))
 
-def give_film(bot, update):
-    user = update.message.from_user
+def ipcam1(bot, update):
+    logger.info(update.message.text)
+    update.message.reply_text("please wait...")
+    transfer = subprocess.call('./ipcam1.sh', shell=True)
     chat_id = update.message.chat_id
     logger.info(chat_id)
-    update.message.reply_text(title)
-    update.message.reply_text(poster_img)
-
-def gender(bot, update):
-    user = update.message.from_user
-    logger.info("Gender of %s: %s", user.first_name, update.message.text)
-    update.message.reply_text('I see! Please send me a photo of yourself, '
-                              'so I know what you look like, or send /skip if you don\'t want to.',
-                              reply_markup=ReplyKeyboardRemove())
-
-    return PHOTO
+    bot.send_photo(chat_id=chat_id, photo=open("ipcam.jpg", 'rb'))
 
 
-def photo(bot, update):
-    user = update.message.from_user
-    photo_file = bot.get_file(update.message.photo[-1].file_id)
-    photo_file.download('user_photo.jpg')
-    logger.info("Photo of %s: %s", user.first_name, 'user_photo.jpg')
-    update.message.reply_text('Gorgeous! Now, send me your location please, '
-                              'or send /skip if you don\'t want to.')
-
-    return LOCATION
-
-
-def skip_photo(bot, update):
-    user = update.message.from_user
-    logger.info("User %s did not send a photo.", user.first_name)
-    update.message.reply_text('I bet you look great! Now, send me your location please, '
-                              'or send /skip.')
-
-    return LOCATION
+# def received_information(bot, update, user_data):
+#     text = update.message.text
+#     category = user_data['choice']
+#     user_data[category] = text
+#     del user_data['choice']
+#
+#     update.message.reply_text("Neat! Just so you know, this is what you already told me:"
+#                               "{}"
+#                               "You can tell me more, or change your opinion on something.".format(
+#                                   facts_to_str(user_data)), reply_markup=markup)
+#
+#     return CHOOSING
 
 
-def location(bot, update):
-    user = update.message.from_user
-    user_location = update.message.location
-    logger.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
-                user_location.longitude)
-    update.message.reply_text('Maybe I can visit you sometime! '
-                              'At last, tell me something about yourself.')
+def done(bot, update, user_data):
+    if 'choice' in user_data:
+        del user_data['choice']
 
-    return BIO
+    update.message.reply_text("I learned these facts about you:"
+                              "{}"
+                              "Until next time!".format(facts_to_str(user_data)))
 
-
-def skip_location(bot, update):
-    user = update.message.from_user
-    logger.info("User %s did not send a location.", user.first_name)
-    update.message.reply_text('You seem a bit paranoid! '
-                              'At last, tell me something about yourself.')
-
-    return BIO
-
-
-def bio(bot, update):
-    user = update.message.from_user
-    logger.info("Bio of %s: %s", user.first_name, update.message.text)
-    update.message.reply_text('Thank you! I hope we can talk again some day.')
-
-    return ConversationHandler.END
-
-
-def cancel(bot, update):
-    user = update.message.from_user
-    logger.info("User %s canceled the conversation.", user.first_name)
-    update.message.reply_text('Bye! I hope we can talk again some day.',
-                              reply_markup=ReplyKeyboardRemove())
-
+    user_data.clear()
     return ConversationHandler.END
 
 
@@ -199,7 +117,7 @@ def error(bot, update, error):
 
 
 def main():
-    # Create the EventHandler and pass it your bot's token.
+    # Create the Updater and pass it your bot's token.
     updater = Updater("194467749:AAE6-m8o0b22TJwdiRFYrUM0kkQdhOlmLjw")
 
     # Get the dispatcher to register handlers
@@ -207,27 +125,30 @@ def main():
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
 
-        entry_points = [CommandHandler('start', start)],
         states={
-            GENDER: [RegexHandler('^(Boy|Girl|Other)$', gender)],
-
-            PHOTO: [MessageHandler(Filters.photo, photo),
-                    CommandHandler('skip', skip_photo)],
-
-            LOCATION: [MessageHandler(Filters.location, location),
-                       CommandHandler('skip', skip_location)],
-
-            BIO: [MessageHandler(Filters.text, bio)],
-
-            # PSW: [MessageHandler(Filters.text, psw_check)],
-            # GIVE_MEME: [MessageHandler(Filters.text, give_meme)]
-            GIVE_MEME: [CommandHandler('meme', give_meme)],
-            GIVE_FILM: [CommandHandler('imdb', give_film)],
-            VIBOR: [MessageHandler('', vibor)],
+            CHOOSING: [RegexHandler('^(Age|Favourite colour|Number of siblings)$',
+                                    None,
+                                    pass_user_data=True),
+                       RegexHandler('^/ipcam1$',
+                                    ipcam1),
+                       RegexHandler('^/shot$',
+                                    shot),
+                       ],
+            #
+            # TYPING_CHOICE: [MessageHandler(Filters.text,
+            #                                regular_choice,
+            #                                pass_user_data=True),
+            #                 ],
+            #
+            # TYPING_REPLY: [MessageHandler(Filters.text,
+            #                               received_information,
+            #                               pass_user_data=True),
+            #                ],
         },
 
-        fallbacks=[CommandHandler('cancel', cancel)]
+        fallbacks=[RegexHandler('^Done$', done, pass_user_data=True)]
     )
 
     dp.add_handler(conv_handler)
