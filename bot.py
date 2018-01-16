@@ -18,9 +18,10 @@ bot.
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
                           ConversationHandler)
-
+import time
 import logging
 import subprocess
+import os.path
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -29,9 +30,9 @@ logger = logging.getLogger(__name__)
 
 CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
 
-reply_keyboard = [['/shot', 'Favourite colour'],
-                  ['Number of siblings', 'ipcam1'],
-                  ['Done']]
+reply_keyboard = [['/shot', '/ipcam1'],['/timelaps']]
+                  # ['Number of siblings', '/ipcam1'],
+                  # ['Done']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
@@ -70,7 +71,7 @@ def start(bot, update):
 
 def shot(bot, update):
     logger.info(update.message.text)
-    update.message.reply_text("please wait...")
+    update.message.reply_text("please wait...", reply_markup=markup)
     transfer = subprocess.call('./transfer.sh', shell=True)
     chat_id = update.message.chat_id
     logger.info(chat_id)
@@ -78,11 +79,22 @@ def shot(bot, update):
 
 def ipcam1(bot, update):
     logger.info(update.message.text)
-    update.message.reply_text("please wait...")
+    update.message.reply_text("please wait...", reply_markup=markup)
     transfer = subprocess.call('./ipcam1.sh', shell=True)
     chat_id = update.message.chat_id
     logger.info(chat_id)
-    bot.send_photo(chat_id=chat_id, photo=open("ipcam.jpg", 'rb'))
+    bot.send_photo(chat_id=chat_id, photo=open("ipcam1.jpg", 'rb'))
+
+def timelaps(bot, update):
+    chat_id = update.message.chat_id
+    update.message.reply_text("waiting for timelaps...")
+    while not os.path.exists('video.mp4'):
+        time.sleep(1)
+    if os.path.isfile('tlps.gif'):
+        bot.send_document(chat_id=chat_id, document=open('video.mp4', 'rb'))
+        subprocess.call("rm video.mp4", shell=True)
+    else:
+        print ("beda")
 
 
 # def received_information(bot, update, user_data):
@@ -135,6 +147,8 @@ def main():
                                     ipcam1),
                        RegexHandler('^/shot$',
                                     shot),
+                       RegexHandler('^/timelaps$',
+                                    timelaps),
                        ],
             #
             # TYPING_CHOICE: [MessageHandler(Filters.text,
