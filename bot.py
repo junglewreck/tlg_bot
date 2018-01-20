@@ -82,11 +82,13 @@ def ipcam1(bot, update):
     update.message.reply_text("please wait...", reply_markup=markup)
     transfer = subprocess.call('./ipcam1.sh', shell=True)
     chat_id = update.message.chat_id
+    logger.info(chat_id)
     bot.send_photo(chat_id=chat_id, photo=open('camshot.jpg', 'rb'))
 
 def timelaps(bot, update):
     chat_id = update.message.chat_id
-    update.message.reply_text("waiting for timelaps...")
+    logger.info(chat_id)
+    update.message.reply_text("waiting for timelaps...", reply_markup=markup)
     transfer = subprocess.call('./timelaps.sh', shell=True)
     while not os.path.exists('video.mp4'):
         time.sleep(1)
