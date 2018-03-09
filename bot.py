@@ -89,12 +89,18 @@ def timelaps(bot, update):
     chat_id = update.message.chat_id
     logger.info(chat_id)
     update.message.reply_text("waiting for timelaps...", reply_markup=markup)
-    transfer = subprocess.call('./timelaps.sh', shell=True)
+    try:
+    	transfer = subprocess.call('./timelaps.sh', shell=True)
+    except BaseException:
+        update.message.reply_text("Connection to rasp Error", reply_markup=markup)   
     while not os.path.exists('video.mp4'):
         time.sleep(1)
     if os.path.isfile('video.mp4'):
-        bot.send_document(chat_id=chat_id, document=open('video.mp4', 'rb'))
-        subprocess.call("rm video.mp4", shell=True)
+	try:
+        	bot.send_document(chat_id=chat_id, document=open('video.mp4', 'rb'))
+        	subprocess.call("rm video.mp4", shell=True)
+	except BaseException:
+		update.message.reply_text("Encoding Error", reply_markup=markup)
     else:
         print ("beda")
 
