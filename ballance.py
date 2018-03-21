@@ -2,8 +2,8 @@ import requests, lxml.html
 from bs4 import BeautifulSoup
 # session = requests.Session()
 url = 'https://issa.beltelecom.by/main.html'
-values = {'oper_user': '1770002571701',
-          'passwd': '49217'}
+values = {'oper_user': 'login',
+          'passwd': 'psw'}
 
 r = requests.post(url, data=values)
 c = r.content

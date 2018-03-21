@@ -92,7 +92,7 @@ def timelaps(bot, update):
     try:
     	transfer = subprocess.call('./timelaps.sh', shell=True)
     except BaseException:
-        update.message.reply_text("Connection to rasp Error", reply_markup=markup)   
+        update.message.reply_text("Connection to rasp Error", reply_markup=markup)
     while not os.path.exists('video.mp4'):
         time.sleep(1)
     if os.path.isfile('video.mp4'):
@@ -138,7 +138,7 @@ def error(bot, update, error):
 
 def main():
     # Create the Updater and pass it your bot's token.
-    updater = Updater("194467749:AAE6-m8o0b22TJwdiRFYrUM0kkQdhOlmLjw")
+    updater = Updater("api here)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
